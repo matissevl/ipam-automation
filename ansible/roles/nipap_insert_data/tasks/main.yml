@@ -1,0 +1,13 @@
+- name: Remove the existing data using Python
+  ansible.builtin.script:
+    cmd: ../scripts/clear_data.py
+    executable: "{{ python_path }}"
+  delegate_to: localhost
+  become: false
+
+- name: Insert the data using Python
+  ansible.builtin.script:
+    cmd: ../scripts/import_data.py "{{ vrfs_file }}" "{{ prefixes_file }}"
+    executable: "{{ python_path }}"
+  delegate_to: localhost
+  become: false

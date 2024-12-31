@@ -1,4 +1,98 @@
 # site.yml
 ---
 - hosts: all
-  roles: []
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.9
+  tasks:
+    - name: Install Python 3.12 and related packages
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - python3.12
+        - python3.12-pip
+        - python3.12-devel
+        - python3.12-psycopg2
+        - python3.12-mod_wsgi
+        - python3-libselinux
+        - policycoreutils-python-utils
+
+    - name: Create a soft link for python3.12
+      ansible.builtin.file:
+        src: /usr/bin/python3.12
+        dest: /usr/bin/python3
+        state: link
+
+- hosts: netbox
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.9
+  roles:
+    - geerlingguy.postgresql
+    - lae.netbox
+    - netbox_generate_data
+    - netbox_insert_data
+  pre_tasks:
+    - name: Install Redis on the netbox host
+      become: true
+      ansible.builtin.dnf:
+        name: redis
+        state: present
+    - name: Start Redis
+      ansible.builtin.systemd:
+        name: redis
+        state: started
+    - name: Enable Redis
+      ansible.builtin.systemd:
+        name: redis
+        enabled: true
+
+- hosts: nipap
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.9
+  become: true
+  pre_tasks:
+    - name: Install required packages
+      ansible.builtin.dnf:
+        name:
+          - perl-IPC-Run
+          - git
+          - glibc-langpack-en
+          - openldap-devel
+          - vim
+          - httpd
+        state: present
+        enablerepo: crb
+
+    - name: Import PostgreSQL GPG key
+      ansible.builtin.rpm_key:
+        state: present
+        key: https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
+
+    - name: Install PostgreSQL repository
+      ansible.builtin.dnf:
+        name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+        state: present
+
+    - name: Disable the default PostgreSQL module
+      ansible.builtin.dnf:
+        name: postgresql
+        state: absent
+
+    - name: Allow httpd to use port 8181
+      community.general.seport:
+        ports: 8181
+        proto: tcp
+        setype: http_port_t
+        state: present
+
+    - name: Set httpd_can_network_connect flag on and keep it persistent across reboots
+      ansible.builtin.seboolean:
+        name: httpd_can_network_connect
+        state: yes
+        persistent: yes
+
+  roles:
+    - geerlingguy.postgresql
+    - nipap_installer
+    - nipap_generate_data
+    - nipap_insert_data

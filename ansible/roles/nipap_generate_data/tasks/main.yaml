@@ -1,0 +1,6 @@
+- name: Create the data using Python
+  ansible.builtin.script:
+    cmd: ../scripts/generate_data.py "{{ vrfs_file }}" "{{ prefixes_file }}"
+    executable: "{{ python_path }}"
+  delegate_to: localhost
+  become: false

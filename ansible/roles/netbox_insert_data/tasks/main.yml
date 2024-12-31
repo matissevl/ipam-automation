@@ -1,0 +1,27 @@
+- name: Insert the VRFs into NetBox
+  ansible.builtin.script:
+    cmd: ../scripts/insert_update_vrfs.py "{{ netbox_url }}" "{{ admin_netbox_api_token }}" "{{ vrfs_file }}" --log_file "{{ output_dir }}/logs/vrfs.log"
+    executable: "{{ python_path }}"
+  delegate_to: localhost
+  become: false
+
+- name: Insert the VLANs into NetBox
+  ansible.builtin.script:
+    cmd: ../scripts/insert_update_vlans.py "{{ netbox_url }}" "{{ admin_netbox_api_token }}" "{{ vlans_file }}" --log_file "{{ output_dir }}/logs/vlans.log"
+    executable: "{{ python_path }}"
+  delegate_to: localhost
+  become: false
+
+- name: Insert the prefixes into NetBox
+  ansible.builtin.script:
+    cmd: ../scripts/insert_update_subnets.py "{{ netbox_url }}" "{{ admin_netbox_api_token }}" "{{ prefixes_file }}" --log_file "{{ output_dir }}/logs/prefixes.log"
+    executable: "{{ python_path }}"
+  delegate_to: localhost
+  become: false
+
+- name: Insert the IP addresses into NetBox
+  ansible.builtin.script:
+    cmd: ../scripts/insert_update_ip_addresses.py "{{ netbox_url }}" "{{ admin_netbox_api_token }}" "{{ ip_addresses_file }}" --log_file "{{ output_dir }}/logs/ip_addresses.log"
+    executable: "{{ python_path }}"
+  delegate_to: localhost
+  become: false

@@ -1,0 +1,23 @@
+import pynipap
+from pynipap import VRF, Pool, Prefix, AuthOptions
+
+pynipap.xmlrpc_uri = "http://webadmin:NHTvu1aNFb61Lzy75HxN@192.168.101.20:1337/XMLRPC"
+
+a = AuthOptions({"authoritative_source": "ipam_cleanup_script"})
+
+# Fetch all VRFs
+vrfs = VRF.list()  # This returns a list of all VRF objects
+
+# Remove all VRFs except the one with id 0
+for vrf in vrfs:
+    if vrf.id != 0:
+        print("Removing VRF: %s" % vrf.name)
+        vrf.remove()
+
+# Fetch all Prefixes
+prefixes = Prefix.list()  # This returns a list of all Prefix objects
+
+# Remove all Prefixes
+for prefix in prefixes:
+    print("Removing Prefix: %s" % prefix.prefix)
+    prefix.remove()

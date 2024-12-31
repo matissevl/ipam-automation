@@ -1,0 +1,82 @@
+nipap_user: nipap
+nipap_group: nipap
+nipap_home: /opt/nipap
+nipap_database_user: nipap
+nipap_database: nipap
+nipap_database_user_password: nipap123
+
+postgresql_login_unix_socket: /var/run/postgresql
+
+# PostgreSQL variables
+postgresql_restarted_state: "restarted"
+postgresql_python_library: "python3-psycopg2"
+# postgresql_user: postgres
+# postgresql_group: postgres
+postgresql_unix_socket_directories:
+  - "{{ postgresql_login_unix_socket }}"
+postgresql_service_state: started
+postgresql_service_enabled: true
+postgresql_users:
+  - name: "{{ nipap_database_user }}"
+    # role_attr_flags: NOSUPERUSER,NOCREATEROLE,NOCREATEDB
+    role_attr_flags: SUPERUSER
+    password: "{{ nipap_database_user_password }}"
+postgresql_databases:
+  - name: "{{ nipap_database }}"
+    owner: "{{ nipap_database_user }}"
+    # lc_ctype: "en_US.UTF-8"
+postgres_users_no_log: false
+# postgresql_locales:
+#   - "en_US.UTF-8"
+
+postgresql_enablerepo: "pgdg17"
+postgresql_version: "17"
+postgresql_data_dir: /var/lib/pgsql/17/data
+postgresql_bin_path: /usr/pgsql-17/bin
+postgresql_config_path: /var/lib/pgsql/17/data
+postgresql_daemon: postgresql-17.service
+postgresql_packages:
+  - postgresql17
+  - postgresql17-server
+  - postgresql17-libs
+  - postgresql17-contrib
+  - postgresql17-devel
+# postgresql_enablerepo: "pgdg10"
+# postgresql_version: 10
+# postgresql_data_dir: /var/lib/pgsql/10/data
+# postgresql_bin_path: /usr/pgsql-10/bin
+# postgresql_config_path: /var/lib/pgsql/10/data
+# postgresql_daemon: postgresql-10.service
+# postgresql_packages:
+#   - postgresql10
+#   - postgresql10-server
+#   - postgresql10-libs
+#   - postgresql10-contrib
+#   - postgresql10-devel
+# become: yes
+
+nipap_admin_user: admin
+nipap_admin_password: "NHTvu1aNFb61Lzy75HxN"
+# LISTEN_ADDRESS: "0.0.0.0"
+# LISTEN_PORT: "1337"
+# SYSLOG: "true"
+# DB_HOST: "localhost"
+# DB_PORT: "5432"
+# DB_NAME: "nipap"
+# DB_USERNAME: "nipap_user"
+# DB_PASSWORD: "your_password_here"
+# DB_SSLMODE: "disable"
+# NIPAPD_USERNAME: "nipap"
+# NIPAPD_PASSWORD: "your_password_here"
+
+nipap_webui_user: webadmin
+nipap_webui_password: "NHTvu1aNFb61Lzy75HxN"
+
+# Nipap data generation variables
+vrfs_file: "{{ output_dir }}/nipap/vrfs.json"
+vlans_file: "{{ output_dir }}/nipap/vlans.json"
+prefixes_file: "{{ output_dir }}/nipap/prefixes.json"
+# ip_addresses_file: "{{ output_dir }}/nipap/ip_addresses.json"
+
+nipap_url: http://192.168.101.20:8181
+# admin_nipap_api_token: 2247a0371d4e186a5c78f3e13417970d5672b3b1

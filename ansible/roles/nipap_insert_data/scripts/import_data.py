@@ -1,0 +1,154 @@
+import json
+import logging
+import pynipap
+from pynipap import VRF, Prefix, AuthOptions
+import argparse
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(asctime)s - %(message)s"
+)
+
+# Set up pynipap XML-RPC URI and authentication
+pynipap.xmlrpc_uri = "http://webadmin:NHTvu1aNFb61Lzy75HxN@192.168.101.20:1337/XMLRPC"
+auth_options = AuthOptions({"authoritative_source": "python-nipap"})
+
+# Fetch all existing VRFs
+try:
+    vrfs = VRF.list({})
+    logging.info(f"Found {len(vrfs)} VRFs in NIPAP.")
+    existing_vrf_ids = {vrf.id for vrf in vrfs}
+    existing_vrf_rts = {vrf.rt for vrf in vrfs if vrf.rt is not None}
+    vrf_name_map = {vrf.name: vrf for vrf in vrfs}
+except Exception as e:
+    logging.error(f"Failed to fetch VRFs from NIPAP: {e}")
+    raise
+
+# Fetch all existing Prefixes
+try:
+    prefixes = Prefix.list({})
+    logging.info(f"Found {len(prefixes)} prefixes in NIPAP.")
+    existing_prefixes = {prefix.prefix for prefix in prefixes}
+except Exception as e:
+    logging.error(f"Failed to fetch Prefixes from NIPAP: {e}")
+    raise
+
+
+def import_vrfs(vrf_file):
+    try:
+        with open(vrf_file, "r") as f:
+            vrf_data = json.load(f)
+    except FileNotFoundError:
+        logging.error(f"VRF file {vrf_file} not found.")
+        raise
+    except json.JSONDecodeError as e:
+        logging.error(f"Failed to parse JSON from {vrf_file}: {e}")
+        raise
+
+    for entry in vrf_data:
+        try:
+            # Validate required fields
+            required_fields = ["name", "rt", "description"]
+            for field in required_fields:
+                if field not in entry:
+                    raise ValueError(f"Missing required field: {field}")
+
+            # Check for VRF conflicts
+            if entry["id"] in existing_vrf_ids:
+                logging.warning(
+                    f"VRF ID {entry['id']} already exists. Skipping creation."
+                )
+                continue
+            if entry["rt"] in existing_vrf_rts:
+                logging.warning(
+                    f"VRF RT {entry['rt']} already exists. Skipping creation."
+                )
+                continue
+
+            # Create VRF
+            vrf = VRF()
+            vrf.rt = entry["rt"]
+            vrf.name = entry["name"]
+            vrf.description = entry["description"]
+            try:
+                vrf.save()
+                logging.info(f"Successfully created VRF {vrf.name} with ID {vrf.id}")
+                # Add the new VRF to the lists
+                vrfs.append(vrf)
+                vrf_name_map[vrf.name] = vrf
+            except Exception as vrf_create_error:
+                logging.error(f"Failed to create VRF {vrf.name}: {vrf_create_error}")
+                continue
+
+        except Exception as e:
+            logging.error(
+                f"Failed to process VRF entry {entry.get('name', 'unknown')}: {e}"
+            )
+
+
+def import_prefixes(prefix_file):
+    try:
+        with open(prefix_file, "r") as f:
+            prefix_data = json.load(f)
+    except FileNotFoundError:
+        logging.error(f"Prefix file {prefix_file} not found.")
+        raise
+    except json.JSONDecodeError as e:
+        logging.error(f"Failed to parse JSON from {prefix_file}: {e}")
+        raise
+
+    for entry in prefix_data:
+        try:
+            # Validate required fields
+            required_fields = ["prefix", "vrf_name", "type", "description"]
+            for field in required_fields:
+                if field not in entry:
+                    raise ValueError(f"Missing required field: {field}")
+
+            # Check if prefix already exists
+            if entry["prefix"] in existing_prefixes:
+                logging.warning(
+                    f"Prefix {entry['prefix']} already exists. Skipping creation."
+                )
+                continue
+
+            # Find the associated VRF
+            vrf = vrf_name_map.get(entry["vrf_name"])
+            if not vrf:
+                logging.error(f"VRF {entry['vrf_name']} not found. Skipping prefix.")
+                continue
+
+            # Create Prefix
+            prefix = Prefix()
+            prefix.prefix = entry["prefix"]
+            prefix.vrf = vrf
+            prefix.type = entry["type"]
+            prefix.description = entry["description"]
+            if "tags" in entry:
+                prefix.tags = entry["tags"]
+            if "node" in entry:
+                prefix.node = entry["node"]
+
+            try:
+                prefix.save()
+                logging.info(f"Successfully created Prefix {prefix.prefix}")
+            except Exception as prefix_create_error:
+                logging.error(
+                    f"Failed to create Prefix {entry['prefix']}: {prefix_create_error}"
+                )
+                continue
+
+        except Exception as e:
+            logging.error(
+                f"Failed to process Prefix entry {entry.get('prefix', 'unknown')}: {e}"
+            )
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Import VRFs and Prefixes into NIPAP.")
+    parser.add_argument("vrf_file", help="Path to the VRF JSON file")
+    parser.add_argument("prefix_file", help="Path to the Prefix JSON file")
+    args = parser.parse_args()
+
+    import_vrfs(args.vrf_file)
+    import_prefixes(args.prefix_file)

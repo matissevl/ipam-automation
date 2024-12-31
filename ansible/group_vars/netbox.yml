@@ -1,0 +1,59 @@
+# PostgreSQL variables
+postgresql_restarted_state: "restarted"
+postgresql_python_library: "python3-psycopg2"
+postgresql_unix_socket_directories:
+  - /var/run/postgresql
+postgresql_service_state: started
+postgresql_service_enabled: true
+postgresql_users:
+  - name: "{{ netbox_database_user }}"
+    role_attr_flags: CREATEDB,NOSUPERUSER
+postgres_users_no_log: false
+
+# Netbox configuration variables
+netbox_stable: true
+netbox_git: false
+netbox_stable_version: 4.1.6
+netbox_superuser_enabled: true
+netbox_superuser_username: admin
+netbox_superuser_password: "Ck6tV769O2Zx2Y5xF2mK"
+netbox_superuser_email: admin@localhost
+netbox_superuser_create_token: true
+netbox_database: netbox
+netbox_database_user: netbox
+netbox_database_socket: /var/run/postgresql
+netbox_database_conn_age: 300
+netbox_redis_host: 127.0.0.1
+netbox_redis_port: 6379
+
+netbox_config:
+  ALLOWED_HOSTS:
+    - localhost
+    - 127.0.0.1
+    - 192.168.101.10
+  MEDIA_ROOT: "{{ netbox_shared_path }}/media"
+  REPORTS_ROOT: "{{ netbox_shared_path }}/reports"
+  SCRIPTS_ROOT: "{{ netbox_shared_path }}/scripts"
+
+netbox_user: netbox
+netbox_group: netbox
+netbox_home: /opt/netbox
+netbox_releases_path: "{{ netbox_home }}/releases"
+netbox_git_repo_path: "{{ netbox_releases_path }}/git-repo"
+netbox_git_deploy_path: "{{ netbox_releases_path }}/git-deploy"
+netbox_stable_path: "{{ netbox_releases_path }}/netbox-{{ netbox_stable_version }}"
+netbox_current_path: "{{ netbox_home }}/current"
+netbox_shared_path: "{{ netbox_home }}/shared"
+netbox_keep_uwsgi_updated: true
+netbox_uwsgi_in_venv: true
+netbox_python_binary: /usr/bin/python3.12
+netbox_socket: "0.0.0.0:8000"
+
+# Netbox data generation variables
+vrfs_file: "{{ output_dir }}/netbox/vrfs.json"
+vlans_file: "{{ output_dir }}/netbox/vlans.json"
+prefixes_file: "{{ output_dir }}/netbox/prefixes.json"
+ip_addresses_file: "{{ output_dir }}/netbox/ip_addresses.json"
+
+netbox_url: http://192.168.101.10:8000
+admin_netbox_api_token: e5d2c67246f76fbcdbb9faf148ff8607be9949f9
