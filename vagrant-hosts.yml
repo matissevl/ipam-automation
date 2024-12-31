@@ -4,30 +4,24 @@
 # possible settings, see the documentation at
 # <https://github.com/bertvv/ansible-skeleton>
 ---
-- name: srv001
-  ip: 192.168.56.10
+- name: netbox-vm
+  box: almalinux/9
+  ip: 192.168.101.10
+  memory: 4096
+  cpus: 2
+  # playbook: netbox.yml
+  forwarded_ports:
+    - host: 8000
+      guest: 8000
 
-# Example of a more elaborate host definition
-# - name: srv002
-#   box: bento/fedora-28
-#   memory: 2048
-#   cpus: 2
-#   ip: 172.20.0.10
-#   netmask: 255.255.0.0
-#   mac: '13:37:de:ad:be:ef'
-#   playbook: srv002.yml
-#   forwarded_ports:
-#     - host: 8080
-#       guest: 80
-#     - host: 8443
-#       guest: 443
-#   synced_folders:
-#     - src: test
-#       dest: /tmp/test
-#     - src: www
-#       dest: /var/www/html
-#       options:
-#         :create: true
-#         :owner: root
-#         :group: root
-#         :mount_options: ['dmode=0755', 'fmode=0644']
+- name: nipap-vm
+  box: almalinux/9
+  ip: 192.168.101.20
+  memory: 4096
+  cpus: 2
+  # playbook: nipap.yml
+  forwarded_ports:
+    - host: 8181
+      guest: 8181
+    - host: 1337
+      guest: 1337

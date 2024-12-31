@@ -14,7 +14,7 @@ require 'yaml'
 ENV["LC_ALL"] = "en_US.UTF-8"
 
 # Set your default base box here
-DEFAULT_BASE_BOX = 'bento/centos-7.6'
+DEFAULT_BASE_BOX = 'almalinux/9'
 
 # When set to `true`, Ansible will be forced to be run locally on the VM
 # instead of from the host machine (provided Ansible is installed).
@@ -140,7 +140,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       node.vm.box_url = host['box_url'] if host.key? 'box_url'
 
       node.vm.hostname = host['name']
-      node.vm.network :private_network, network_options(host)
+      # node.vm.network :private_network, network_options(host)
+      node.vm.network :private_network, **network_options(host)
       custom_synced_folders(node.vm, host)
       shell_provisioners_always(node.vm, host)
       forwarded_ports(node.vm, host)

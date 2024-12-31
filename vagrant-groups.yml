@@ -11,3 +11,7 @@
 #
 # Leave the file empty if you do not want to define groups.
 ---
+netbox:
+  - netbox-vm
+nipap:
+  - nipap-vm
