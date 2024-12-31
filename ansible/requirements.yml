@@ -1,0 +1,10 @@
+---
+roles:
+  - name: geerlingguy.postgresql
+  - name: davidwittman.redis
+    src: https://github.com/DavidWittman/ansible-redis
+  - name: lae.netbox
+    src: https://github.com/lae/ansible-role-netbox
+
+collections:
+  - name: community.postgresql
