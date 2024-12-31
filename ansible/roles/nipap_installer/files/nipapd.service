@@ -1,0 +1,26 @@
+[Unit]
+Description=NIPAP daemon
+Documentation=man:nipapd(5)
+After=network.target
+
+[Service]
+Environment="PATH=/usr/share/nipap/venv/bin/"
+Type=simple
+ExecStart=/usr/sbin/nipapd -f
+#ExecStop=/bin/kill -SIGTERM $MAINPID
+TimeoutStopSec=10s
+KillMode=control-group
+KillSignal=SIGKILL
+Restart=on-failure
+RestartSec=42s
+WorkingDirectory=/var/run/nipap
+User=nipap
+Group=nipap
+RuntimeDirectory=nipap
+RuntimeDirectoryMode=0755
+EnvironmentFile=-/etc/default/nipapd
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

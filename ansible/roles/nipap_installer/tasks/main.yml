@@ -1,0 +1,225 @@
+# nipap.yml
+---
+- name: Create nipap user group
+  become: true
+  group:
+    name: "{{ nipap_group }}"
+
+- name: Create nipap user and home directory
+  become: true
+  user:
+    name: "{{ nipap_user }}"
+    group: "{{ nipap_group }}"
+    home: "{{ nipap_home }}"
+
+- name: Clone NIPAP repository
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/SpriteLink/NIPAP.git
+    dest: /usr/share/nipap
+    version: v0.32.5
+
+- name: Install required packages for building ip4r
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - git
+      - make
+      - gcc
+      - wget
+    state: present
+
+- name: Clone ip4r repository
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/RhodiumToad/ip4r.git
+    dest: /tmp/ip4r
+
+- name: Build ip4r extension
+  become: true
+  ansible.builtin.command:
+    cmd: make
+    chdir: /tmp/ip4r
+    creates: /tmp/ip4r/ip4r.so
+  environment:
+    PATH: "/usr/pgsql-17/bin:{{ ansible_env.PATH }}"
+
+- name: Install ip4r extension
+  become: true
+  ansible.builtin.command:
+    cmd: make install
+    chdir: /tmp/ip4r
+    creates: /usr/pgsql-17/lib/ip4r.so
+  environment:
+    PATH: "/usr/pgsql-17/bin:{{ ansible_env.PATH }}"
+
+- name: Ensure ip4r extension is installed
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_ext:
+    name: ip4r
+    login_user: postgres
+    login_unix_socket: /var/run/postgresql
+    db: "{{ nipap_database }}"
+
+- name: Ensure hstore extension is installed
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_ext:
+    name: hstore
+    login_user: postgres
+    login_unix_socket: /var/run/postgresql
+    db: "{{ nipap_database }}"
+
+- name: Ensure citext extension is installed
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_ext:
+    name: citext
+    login_user: postgres
+    login_unix_socket: /var/run/postgresql
+    db: "{{ nipap_database }}"
+
+- name: Install OpenLDAP development libraries
+  become: true
+  ansible.builtin.dnf:
+    name: openldap-devel
+    state: present
+
+- name: Create virtual environment for NIPAP
+  become: true
+  ansible.builtin.command:
+    cmd: python3 -m venv /usr/share/nipap/venv
+
+- name: Install required Python packages from requirements.txt in virtual environment
+  become: true
+  ansible.builtin.pip:
+    requirements: /usr/share/nipap/nipap/requirements.txt
+    virtualenv: /usr/share/nipap/venv
+  environment:
+    PATH: "/usr/share/nipap/venv/bin:/usr/pgsql-17/bin:{{ ansible_env.PATH }}"
+
+- name: Install nipapd daemon in virtual environment
+  become: true
+  ansible.builtin.command:
+    cmd: /usr/share/nipap/venv/bin/python setup.py install
+    chdir: /usr/share/nipap/nipap
+
+- name: Reinstall docutils in virtual environment
+  become: true
+  ansible.builtin.pip:
+    name: docutils==0.21.1
+    state: forcereinstall
+    virtualenv: /usr/share/nipap/venv
+
+- name: Install NIPAP CLI client in virtual environment
+  become: true
+  ansible.builtin.command:
+    cmd: /usr/share/nipap/venv/bin/pip install .
+    chdir: /usr/share/nipap/nipap-cli
+  environment:
+    PATH: "/usr/share/nipap/venv/bin:{{ ansible_env.PATH }}"
+
+- name: Copy nipap.conf.dist to nipap.conf
+  ansible.builtin.copy:
+    src: /etc/nipap/nipap.conf.dist
+    dest: /etc/nipap/nipap.conf
+    remote_src: true
+
+# - name: Initialize SQLite auth database
+#   become: true
+#   ansible.builtin.command:
+#     cmd: nipap-passwd create-database -u "{{ nipap_admin_user }}" -p "{{ nipap_admin_password }}" -n "admin user"
+- name: Initialize SQLite auth database
+  become: true
+  ansible.builtin.shell: |
+    source /usr/share/nipap/venv/bin/activate
+    nipap-passwd create-database -u "{{ nipap_admin_user }}" -p "{{ nipap_admin_password }}" -n "admin user"
+  args:
+    executable: /bin/bash
+
+- name: Create directory /var/run/nipap
+  become: true
+  ansible.builtin.file:
+    path: /var/run/nipap
+    state: directory
+    owner: "{{ nipap_user }}"
+    group: "{{ nipap_group }}"
+    mode: "0755"
+
+- name: Copy nipap configuration file
+  become: true
+  ansible.builtin.copy:
+    src: ../files/nipap.conf
+    dest: /etc/nipap/nipap.conf
+    mode: "0644"
+
+- name: Auto install NIPAP database
+  become: true
+  ansible.builtin.shell: |
+    source /usr/share/nipap/venv/bin/activate
+    /usr/sbin/nipapd --auto-install-db
+  args:
+    executable: /bin/bash
+
+- name: Create NIPAP web UI user
+  become: true
+  ansible.builtin.shell: |
+    source /usr/share/nipap/venv/bin/activate
+    nipap-passwd add -u "{{ nipap_webui_user }}" -p "{{ nipap_webui_password }}" -n "NIPAP web UI" -t
+  args:
+    executable: /bin/bash
+
+- name: Ensure /etc/nipap/www directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/nipap/www
+    state: directory
+    mode: "0755"
+
+- name: Copy nipap-www.wsgi file
+  become: true
+  ansible.builtin.copy:
+    src: ../files/nipap-www.wsgi
+    dest: /etc/nipap/www/nipap-www.wsgi
+    mode: "0644"
+
+- name: Copy nipapd systemd service file
+  become: true
+  ansible.builtin.copy:
+    src: ../files/nipapd.service
+    dest: /etc/systemd/system/nipapd.service
+    mode: "0644"
+
+- name: Reload systemd daemon
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Ensure nipapd service is running and enabled
+  become: true
+  ansible.builtin.systemd:
+    name: nipapd
+    state: started
+    enabled: true
+
+- name: Configure httpd for NIPAP web UI
+  become: true
+  ansible.builtin.copy:
+    src: ../files/nipap-httpd.conf
+    dest: /etc/httpd/conf.d/nipap.conf
+    mode: "0644"
+
+- name: Configure httpd for NIPAP web UI
+  become: true
+  ansible.builtin.copy:
+    src: ../files/httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+    mode: "0644"
+
+- name: Ensure httpd service is running and enabled
+  become: true
+  ansible.builtin.systemd:
+    name: httpd
+    state: started
+    enabled: true
