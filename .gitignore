@@ -28,4 +28,4 @@ ansible/roles/*.*
 # Ansible fact cache
 .ansible_cache/
 
-.venv/
+venv/
