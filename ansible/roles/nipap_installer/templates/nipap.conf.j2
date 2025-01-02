@@ -46,25 +46,25 @@
 #group = nipap
 
 
-listen = 0.0.0.0      ; IP address to listen on.
+listen = {{ nipap_listen }}      ; IP address to listen on.
 # The default is to listen to 127.0.0.1. Use 0.0.0.0 to listen on all addresses
 # (change requires restart).
-port = 1337          ; API listen port (change requires restart)
-#ssl_port =                     ; API SSL listen port (change requires restart)
-#ssl_cert_file = /etc/ssl/certs/nipap.crt ; Certificate file to use for SSL
-#ssl_key_file = /etc/ssl/priv/nipap.key   ; Key file to use with certificate, unless bundled in certificate file
+port = {{ nipap_port }}          ; API listen port (change requires restart)
+#ssl_port = {{ nipap_ssl_port | default('') }}                     ; API SSL listen port (change requires restart)
+#ssl_cert_file = {{ nipap_ssl_cert_file | default('/etc/ssl/certs/nipap.crt') }} ; Certificate file to use for SSL
+#ssl_key_file = {{ nipap_ssl_key_file | default('/etc/ssl/priv/nipap.key') }}   ; Key file to use with certificate, unless bundled in certificate file
 
-foreground = false              ; run in foreground, won't work with init script
-debug = false                   ; enable debug logging
+foreground = {{ nipap_foreground }}              ; run in foreground, won't work with init script
+debug = {{ nipap_debug }}                   ; enable debug logging
 
-forks = 0                        ; number of forks
+forks = {{ nipap_forks }}                        ; number of forks
 # fork processes, mutually exclusive with foreground. 0 = automatically
 # determine number of forks (same as number of CPUs). -1 = no forking, >0 =
 # number of forks. Default is to automatically determine number of forks.
 
-syslog = true             ; log to syslog
+syslog = {{ nipap_syslog | default('true') }}            ; log to syslog
 
-pid_file = /run/nipap/nipapd.pid
+pid_file = {{ nipap_pid_file | default('/run/nipapd.pid') }} ; path to PID file
 
 #
 # - Database Connection -
@@ -73,7 +73,7 @@ pid_file = /run/nipap/nipapd.pid
 # backend database
 #
 
-db_host = 127.0.0.1           ; database hostname
+db_host = {{ nipap_db_host }}           ; database hostname
 # The default is to connect via IP to localhost. This is preferred over
 # connecting over a UNIX socket as it supports MD5 authentication.
 # "" (ie, empty string without quotes), is a special case which means to
@@ -81,14 +81,14 @@ db_host = 127.0.0.1           ; database hostname
 # using "ident" support so the user nipapd is run as needs to match with the
 # database username.
 
-db_port = 5432           ; port that PostgreSQL listens to, defaults to
+db_port = {{ nipap_db_port }}           ; port that PostgreSQL listens to, defaults to
 # 5432, only applicable if connection is not over a UNIX socket
 
-db_name = nipap           ; database name
-db_user = nipap       ; database username
-db_pass = nipap123       ; database password
+db_name = {{ nipap_database }}           ; database name
+db_user = {{ nipap_database_user }}       ; database username
+db_pass = {{ nipap_database_user_password }}       ; database password
 
-db_sslmode = disable     ; database SSL mode
+db_sslmode = {{ nipap_db_sslmode | default('disable') }}     ; database SSL mode
 # please see the PostgreSQL database documentation for further details
 
 
@@ -98,14 +98,14 @@ db_sslmode = disable     ; database SSL mode
 # --------------------------------------------
 #
 [auth]
-default_backend = local                ; which backend to use by default
-auth_cache_timeout = 3600              ; seconds cached auth entries are stored
+default_backend = {{ nipap_default_backend | default('local') }}                ; which backend to use by default
+auth_cache_timeout = {{ nipap_auth_cache_timeout | default(300) }}              ; seconds cached auth entries are stored
 
 # example backend with SQLite
 [auth.backends.local]
 type = SqliteAuth
 
-db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
+db_path = {{ nipap_db_path | default('/etc/nipap/local_auth.db') }}     ; path to SQLite database used
 
 # example backend for LDAP
 #[auth.backends.ldap1]
@@ -191,13 +191,13 @@ db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 #
 [www]
 #xmlrpc_uri = http://webadmin:"NHTvu1aNFb61Lzy75HxN"@127.0.0.1:1337
-xmlrpc_uri = http://webadmin:NHTvu1aNFb61Lzy75HxN@127.0.0.1:1337
+xmlrpc_uri = {{ nipap_xmlrpc_uri }}
 #connection uri to the backend
 #example using local authentication with username 'user' and password 'pass'
 #xmlrpc_uri = http://user@local:pass@127.0.0.1:1337
 
 # Secret used to sign cookies etc
-secret_key = {{WWW_SECRET_KEY}}
+secret_key = {{ nipap_secret_key }}
 
 # welcome_message allows the display of a custom message on the login page of
 # the web interface, it might contain hints about what credentials to use or
