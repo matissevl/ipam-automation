@@ -1,3 +1,4 @@
+nipap_ip: "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}"
 nipap_user: nipap
 nipap_group: nipap
 nipap_home: /opt/nipap
@@ -13,7 +14,7 @@ nipap_db_host: 127.0.0.1
 nipap_db_port: 5432
 nipap_xmlrpc_uri: http://{{ nipap_webui_user }}:{{ nipap_webui_password }}@127.0.0.1:{{ nipap_port }}
 nipap_secret_key: "SoE45aS64AJDf1Xtwaz6"
-nipap_url: http://192.168.101.20:8181
+nipap_url: http://{{ nipap_ip }}:8181
 nipap_admin_user: admin
 nipap_admin_password: "H1b8k06CyBWPcnMx0a1F"
 
@@ -54,5 +55,3 @@ vrfs_file: "{{ output_dir }}/nipap/vrfs.json"
 vlans_file: "{{ output_dir }}/nipap/vlans.json"
 prefixes_file: "{{ output_dir }}/nipap/prefixes.json"
 # ip_addresses_file: "{{ output_dir }}/nipap/ip_addresses.json"
-
-# admin_nipap_api_token: 2247a0371d4e186a5c78f3e13417970d5672b3b1

@@ -2,7 +2,6 @@ import json
 import random
 import argparse
 import ipaddress
-from collections import defaultdict
 
 
 def generate_ip_pool(subnets):
@@ -73,7 +72,7 @@ parser.add_argument("output_file", help="The output JSON file")
 parser.add_argument(
     "--count",
     type=int,
-    default=2000,
+    default=500,
     help=" Total number of IP addresses to generate (default: 2000)",
 )
 
@@ -96,13 +95,13 @@ ip_addresses = []
 
 # Calculate number of IPs to generate per VRF
 num_vrfs = len(vrfs)
-ios_per_vrf = total_count // num_vrfs
+ips_per_vrf = total_count // num_vrfs
 remaining_ips = total_count % num_vrfs  # Handle any remainder
 
 # Generate IP addresses for each VRF
 for i, vrf in enumerate(vrfs):
     vrf_name = vrf["name"]
-    target_count = ios_per_vrf + (1 if i < remaining_ips else 0)  # Distribute remainder
+    target_count = ips_per_vrf + (1 if i < remaining_ips else 0)  # Distribute remainder
     allocation = evenly_distribute_ips(ip_pool, target_count)  # Per-subnet allocation
     vrf_ips = generate_random_ips(ip_pool, allocation, ip_set, vrf_name)
     ip_addresses.extend(vrf_ips)

@@ -99,7 +99,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--count",
         type=int,
-        default=300,
+        default=20,
         help="Total number of subnets to generate (default: 300)",
     )
     args = parser.parse_args()

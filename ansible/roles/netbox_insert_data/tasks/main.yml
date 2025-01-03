@@ -1,27 +1,56 @@
+- name: Create a new token for the NetBox API
+  uri:
+    url: "http://{{ netbox_ip }}:8000/api/users/tokens/provision/"
+    method: POST
+    body_format: json
+    body:
+      username: "{{ netbox_superuser_username }}"
+      password: "{{ netbox_superuser_password }}"
+    headers:
+      Content-Type: application/json
+    status_code: 201
+  register: new_token
+
+- name: Save the new token to a variable
+  set_fact:
+    netbox_api_token: "{{ new_token.json.key }}"
+
+- name: Save the id of the new token to a variable
+  set_fact:
+    netbox_api_token_id: "{{ new_token.json.id }}"
+
 - name: Insert the VRFs into NetBox
   ansible.builtin.script:
-    cmd: ../scripts/insert_update_vrfs.py "{{ netbox_url }}" "{{ admin_netbox_api_token }}" "{{ vrfs_file }}" --log_file "{{ output_dir }}/logs/vrfs.log"
+    cmd: ../scripts/insert_update_vrfs.py "{{ netbox_url }}" "{{ netbox_api_token }}" "{{ vrfs_file }}" --log_file "{{ output_dir }}/logs/vrfs.log"
     executable: "{{ python_path }}"
   delegate_to: localhost
   become: false
 
 - name: Insert the VLANs into NetBox
   ansible.builtin.script:
-    cmd: ../scripts/insert_update_vlans.py "{{ netbox_url }}" "{{ admin_netbox_api_token }}" "{{ vlans_file }}" --log_file "{{ output_dir }}/logs/vlans.log"
+    cmd: ../scripts/insert_update_vlans.py "{{ netbox_url }}" "{{ netbox_api_token }}" "{{ vlans_file }}" --log_file "{{ output_dir }}/logs/vlans.log"
     executable: "{{ python_path }}"
   delegate_to: localhost
   become: false
 
 - name: Insert the prefixes into NetBox
   ansible.builtin.script:
-    cmd: ../scripts/insert_update_subnets.py "{{ netbox_url }}" "{{ admin_netbox_api_token }}" "{{ prefixes_file }}" --log_file "{{ output_dir }}/logs/prefixes.log"
+    cmd: ../scripts/insert_update_subnets.py "{{ netbox_url }}" "{{ netbox_api_token }}" "{{ prefixes_file }}" --log_file "{{ output_dir }}/logs/prefixes.log"
     executable: "{{ python_path }}"
   delegate_to: localhost
   become: false
 
 - name: Insert the IP addresses into NetBox
   ansible.builtin.script:
-    cmd: ../scripts/insert_update_ip_addresses.py "{{ netbox_url }}" "{{ admin_netbox_api_token }}" "{{ ip_addresses_file }}" --log_file "{{ output_dir }}/logs/ip_addresses.log"
+    cmd: ../scripts/insert_update_ip_addresses.py "{{ netbox_url }}" "{{ netbox_api_token }}" "{{ ip_addresses_file }}" --log_file "{{ output_dir }}/logs/ip_addresses.log"
     executable: "{{ python_path }}"
   delegate_to: localhost
   become: false
+
+- name: Delete the token
+  uri:
+    url: "{{ netbox_url }}/api/users/tokens/{{ netbox_api_token_id }}/"
+    method: DELETE
+    headers:
+      Authorization: "Token {{ netbox_api_token }}"
+    status_code: 204

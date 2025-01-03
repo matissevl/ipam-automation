@@ -11,6 +11,9 @@ postgresql_users:
 postgres_users_no_log: false
 
 # Netbox configuration variables
+netbox_ip: "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}"
+netbox_url: "http://{{ netbox_ip }}:8000"
+
 netbox_stable: true
 netbox_git: false
 netbox_stable_version: 4.1.6
@@ -30,7 +33,7 @@ netbox_config:
   ALLOWED_HOSTS:
     - localhost
     - 127.0.0.1
-    - 192.168.101.10
+    - "{{ netbox_ip }}"
   MEDIA_ROOT: "{{ netbox_shared_path }}/media"
   REPORTS_ROOT: "{{ netbox_shared_path }}/reports"
   SCRIPTS_ROOT: "{{ netbox_shared_path }}/scripts"
@@ -54,6 +57,4 @@ vrfs_file: "{{ output_dir }}/netbox/vrfs.json"
 vlans_file: "{{ output_dir }}/netbox/vlans.json"
 prefixes_file: "{{ output_dir }}/netbox/prefixes.json"
 ip_addresses_file: "{{ output_dir }}/netbox/ip_addresses.json"
-
-netbox_url: http://192.168.101.10:8000
-admin_netbox_api_token: e5d2c67246f76fbcdbb9faf148ff8607be9949f9
+# admin_netbox_api_token: 3ab90b484b537472aef333b2bf723475007c5416

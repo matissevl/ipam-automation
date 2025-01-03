@@ -8,8 +8,6 @@ import argparse
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-# http://192.168.101.10:8000 2247a0371d4e186a5c78f3e13417970d5672b3b1
-
 # Set up argument parser
 parser = argparse.ArgumentParser(description="Insert or update VRFs.")
 parser.add_argument("url", help="The URL of the NetBox instance")
