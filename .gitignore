@@ -29,3 +29,4 @@ ansible/roles/*.*
 .ansible_cache/
 
 venv/
+output/
