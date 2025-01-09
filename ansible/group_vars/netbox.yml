@@ -8,7 +8,7 @@ postgresql_service_enabled: true
 postgresql_users:
   - name: "{{ netbox_database_user }}"
     role_attr_flags: CREATEDB,NOSUPERUSER
-postgres_users_no_log: false
+# postgres_users_no_log: false
 
 # Netbox configuration variables
 netbox_ip: "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}"
