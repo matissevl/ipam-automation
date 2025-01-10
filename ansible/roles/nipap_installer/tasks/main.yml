@@ -1,4 +1,4 @@
-# nipap.yml
+# main.yml
 ---
 - name: Create nipap group
   group:
