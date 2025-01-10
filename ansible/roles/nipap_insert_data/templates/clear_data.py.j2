@@ -1,7 +1,7 @@
 import pynipap
 from pynipap import VRF, Pool, Prefix, AuthOptions
 
-pynipap.xmlrpc_uri = "http://webadmin:NHTvu1aNFb61Lzy75HxN@192.168.101.20:1337/XMLRPC"
+pynipap.xmlrpc_uri = "{{ nipap_xmlrpc_uri }}/XMLRPC"
 
 a = AuthOptions({"authoritative_source": "ipam_cleanup_script"})
 

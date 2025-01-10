@@ -1,13 +1,35 @@
+- name: Render clear_data.py template
+  ansible.builtin.template:
+    src: ../templates/clear_data.py.j2
+    dest: /tmp/clear_data.py
+  delegate_to: localhost
+  become: false
+  vars:
+    ansible_python_interpreter: "{{ python_path }}"
+
 - name: Remove the existing data using Python
   ansible.builtin.script:
-    cmd: ../scripts/clear_data.py
+    cmd: /tmp/clear_data.py
     executable: "{{ python_path }}"
   delegate_to: localhost
   become: false
+  vars:
+    ansible_python_interpreter: "{{ python_path }}"
+
+- name: Render import_data.py template
+  ansible.builtin.template:
+    src: ../templates/import_data.py.j2
+    dest: /tmp/import_data.py
+  delegate_to: localhost
+  become: false
+  vars:
+    ansible_python_interpreter: "{{ python_path }}"
 
 - name: Insert the data using Python
   ansible.builtin.script:
-    cmd: ../scripts/import_data.py "{{ vrfs_file }}" "{{ prefixes_file }}"
+    cmd: /tmp/import_data.py "{{ vrfs_file }}" "{{ prefixes_file }}"
     executable: "{{ python_path }}"
   delegate_to: localhost
   become: false
+  vars:
+    ansible_python_interpreter: "{{ python_path }}"
