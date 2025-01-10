@@ -1,6 +1,8 @@
 # group_vars/all.yml
 # Variables visible to all nodes
 ---
-python_path: /home/matisse/Documents/school/bachelorproef/poc/ipam-test/venv/bin/python
+# python_path: /home/matisse/Documents/school/bachelorproef/poc/ipam-test/venv/bin/python
+root_dir: /home/matisse/Documents/school/bachelorproef/poc/ipam-automation
+python_path: "{{ root_dir }}/venv/bin/python"
 
-output_dir: /home/matisse/Documents/school/bachelorproef/poc/data
+output_dir: "{{ root_dir }}/output"
