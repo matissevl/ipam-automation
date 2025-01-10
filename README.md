@@ -68,9 +68,25 @@ This project sets up two separate virtual machines using Vagrant and Ansible. On
 └── vagrant-hosts.yml
 ```
 
+## Python virtual environment
+
+It is recommended to create a Python virtual environment to install the required Python packages. To create a virtual environment, run the following commands:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install ansible pynipap pynetbox
+```
+
 ## Start the VMs
 
 Before starting the VMs, edit the `vagrant-groups.yml` and `vagrant-hosts.yml` files as needed.
+
+Then, run the following command to start the VMs:
+
+```bash
+vagrant up
+```
 
 This command will create and provision two VMs: one for NetBox and one for NIPAP.
 
@@ -80,8 +96,8 @@ Vagrant will automatically run the Ansible playbooks to install and configure Ne
 
 ## Access the Applications
 
-- **NetBox**: Access NetBox by navigating to `http://<netbox-vm-ip>` in your web browser.
-- **NIPAP**: Access NIPAP by navigating to `http://<nipap-vm-ip>` in your web browser.
+- **NetBox**: Access NetBox by navigating to `http://<netbox-vm-ip>:8000` in your web browser.
+- **NIPAP**: Access NIPAP by navigating to `http://<nipap-vm-ip>:8181` in your web browser.
 
 ## Add Test Data
 
@@ -102,8 +118,11 @@ The `vagrant-groups.yml` and `vagrant-hosts.yml` files define the inventory for 
 
 ## Roles
 
-- **netbox**: Contains tasks to install and configure NetBox.
-- **nipap**: Contains tasks to install and configure NIPAP.
+- **netbox_generate_data**: Contains scripts and tasks to generate test data for NetBox.
+- **netbox_insert_data**: Contains scripts and tasks to insert and update data in NetBox.
+- **nipap_generate_data**: Contains scripts and tasks to generate test data for NIPAP.
+- **nipap_insert_data**: Contains tasks and templates to insert and update data in NIPAP.
+- **nipap_installer**: Contains files, tasks, and templates to install and configure NIPAP.
 
 ## Contributing
 
