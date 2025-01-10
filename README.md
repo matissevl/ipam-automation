@@ -43,25 +43,21 @@ This project sets up two separate virtual machines using Vagrant and Ansible. On
 │   │   │   └── tasks
 │   │   │       └── main.yaml
 │   │   ├── nipap_insert_data
-│   │   │   ├── scripts
-│   │   │   │   ├── clear_data.py
-│   │   │   │   └── import_data.py
-│   │   │   └── tasks
-│   │   │       └── main.yml
+│   │   │   ├── tasks
+│   │   │   │   └── main.yml
+│   │   │   └── templates
+│   │   │       ├── clear_data.py.j2
+│   │   │       └── import_data.py.j2
 │   │   └── nipap_installer
 │   │       ├── files
 │   │       │   ├── httpd
 │   │       │   └── nipap
 │   │       ├── tasks
-│   │       │   ├── main.yml
-│   │       │   └── main.yml.updates
+│   │       │   └── main.yml
 │   │       └── templates
 │   │           └── nipap.conf.j2
 │   └── site.yml
-├── custom-vagrant-hosts.yml
-├── LICENSE
 ├── README.md
-├── README.md.bak
 ├── scripts
 │   ├── measure_latency_netbox.py
 │   ├── measure_latency_nipap.py
@@ -69,7 +65,7 @@ This project sets up two separate virtual machines using Vagrant and Ansible. On
 │   └── verify_password_nipap.py
 ├── Vagrantfile
 ├── vagrant-groups.yml
-├── vagrant-hosts.yml
+└── vagrant-hosts.yml
 ```
 
 ## Start the VMs
