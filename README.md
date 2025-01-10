@@ -76,6 +76,7 @@ It is recommended to create a Python virtual environment to install the required
 python3 -m venv venv
 source venv/bin/activate
 pip install ansible pynipap pynetbox
+ansible-galaxy install -r ansible/requirements.yml
 ```
 
 ## Start the VMs
